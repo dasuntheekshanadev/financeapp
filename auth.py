@@ -5,7 +5,7 @@ from fastapi import HTTPException, Cookie
 from typing import Optional
 from database import get_db
 
-SECRET_KEY = "dasun-finance-secret-key-2026-change-in-production"
+SECRET_KEY = "dv94tt4J2DIibGKhSChbCzm7-hHYU0MWfbieHIy-Wfj8hRgSt_9RgTutHD2UZGDp"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_DAYS = 7
 
