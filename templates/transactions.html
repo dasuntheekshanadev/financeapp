@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FinanceOS - Transactions</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap');
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0e0f11; --surface: #16181c; --surface2: #1c1f25;
+  --border: #2a2d35; --border2: #363b47;
+  --accent: #c8f04c; --accent2: #4cf0b4; --accent3: #4c9ff0;
+  --red: #f87171; --orange: #fb923c; --purple: #a78bfa;
+  --text: #f0f0f0; --text2: #c0c4cf; --muted: #6b7280;
+  --sidebar-w: 220px;
+}
+body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; display: flex; }
+.sidebar {
+  width: var(--sidebar-w); min-height: 100vh; background: var(--surface);
+  border-right: 1px solid var(--border); padding: 1.5rem 1rem;
+  display: flex; flex-direction: column; position: fixed; left: 0; top: 0; bottom: 0;
+}
+.sidebar-brand { font-family: 'DM Serif Display', serif; font-size: 1.4rem; color: var(--accent); padding: 0 0.5rem; margin-bottom: 0.25rem; }
+.sidebar-user { font-size: 0.78rem; color: var(--muted); padding: 0 0.5rem; margin-bottom: 2rem; }
+.nav-item { display: block; padding: 0.55rem 0.75rem; border-radius: 8px; color: var(--text2); text-decoration: none; font-size: 0.88rem; cursor: pointer; transition: all 0.15s; margin-bottom: 0.1rem; }
+.nav-item:hover { background: var(--surface2); color: var(--text); }
+.nav-item.active { background: var(--surface2); color: var(--accent); font-weight: 500; }
+.sidebar-footer { margin-top: auto; border-top: 1px solid var(--border); padding-top: 1rem; }
+.logout-btn { display: block; padding: 0.55rem 0.75rem; border-radius: 8px; color: var(--muted); text-decoration: none; font-size: 0.85rem; transition: all 0.15s; }
+.logout-btn:hover { background: var(--surface2); color: var(--red); }
+.main { margin-left: var(--sidebar-w); flex: 1; padding: 2rem; }
+.page-title { font-family: 'DM Serif Display', serif; font-size: 2rem; margin-bottom: 0.25rem; }
+.page-sub { color: var(--muted); font-size: 0.88rem; margin-bottom: 2rem; }
+.back-link { display: inline-block; color: var(--accent); text-decoration: none; font-size: 0.85rem; margin-bottom: 1.5rem; }
+.filter-bar { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.filter-bar input, .filter-bar select {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 0.55rem 0.85rem; color: var(--text); font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem; outline: none; transition: border-color 0.2s;
+}
+.filter-bar input:focus, .filter-bar select:focus { border-color: var(--accent); }
+.filter-bar input { flex: 1; min-width: 200px; }
+.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+th { text-align: left; padding: 0.75rem 1rem; color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.07em; border-bottom: 1px solid var(--border); font-weight: 500; }
+td { padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); color: var(--text2); }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--surface2); }
+.tx-type { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.72rem; font-weight: 500; text-transform: capitalize; }
+.tx-type.deposit { background: rgba(200,240,76,0.12); color: var(--accent); }
+.tx-type.withdrawal { background: rgba(248,113,113,0.12); color: var(--red); }
+.tx-type.goal_deposit { background: rgba(76,240,180,0.12); color: var(--accent2); }
+.tx-type.debt_payment { background: rgba(251,146,60,0.12); color: var(--orange); }
+.tx-type.installment { background: rgba(167,139,250,0.12); color: var(--purple); }
+.credit { color: var(--accent2); font-weight: 500; }
+.debit { color: var(--red); font-weight: 500; }
+.empty { text-align: center; padding: 3rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-brand">FinanceOS</div>
+  <div class="sidebar-user">{{ user.full_name or user.username }}</div>
+  <a class="nav-item" href="/dashboard">Dashboard</a>
+  <a class="nav-item active" href="/transactions">Transactions</a>
+  <div class="sidebar-footer">
+    <a class="logout-btn" href="/logout">Sign out</a>
+  </div>
+</aside>
+<main class="main">
+  <a class="back-link" href="/dashboard">&larr; Back to Dashboard</a>
+  <div class="page-title">Transactions</div>
+  <div class="page-sub">Complete history of all your financial activity</div>
+
+  <div class="filter-bar">
+    <input type="text" id="search" placeholder="Search transactions..." oninput="filterTable()">
+    <select id="type-filter" onchange="filterTable()">
+      <option value="">All Types</option>
+      <option value="deposit">Deposit</option>
+      <option value="withdrawal">Withdrawal</option>
+      <option value="goal_deposit">Goal Deposit</option>
+      <option value="debt_payment">Debt Payment</option>
+      <option value="installment">Installment</option>
+    </select>
+  </div>
+
+  {% if transactions %}
+  <div class="table-wrap">
+    <table id="tx-table">
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Account / Goal</th>
+          <th>Date</th>
+          <th style="text-align:right">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for tx in transactions %}
+        <tr data-type="{{ tx.type }}" data-desc="{{ (tx.description or '') | lower }}">
+          <td><span class="tx-type {{ tx.type }}">{{ tx.type.replace('_',' ') }}</span></td>
+          <td>{{ tx.description or '-' }}</td>
+          <td>{{ tx.account_name or tx.goal_title or '-' }}</td>
+          <td>{{ tx.date }}</td>
+          <td style="text-align:right" class="{% if tx.type in ['deposit','goal_deposit'] %}credit{% else %}debit{% endif %}">
+            {% if tx.type not in ['deposit','goal_deposit'] %}-{% endif %}Rs {{ "{:,.2f}".format(tx.amount) }}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="table-wrap"><div class="empty">No transactions yet. Start by depositing to a savings account or goal.</div></div>
+  {% endif %}
+</main>
+<script>
+function filterTable() {
+  const search = document.getElementById('search').value.toLowerCase();
+  const type = document.getElementById('type-filter').value;
+  document.querySelectorAll('#tx-table tbody tr').forEach(row => {
+    const matchSearch = !search || row.dataset.desc.includes(search);
+    const matchType = !type || row.dataset.type === type;
+    row.style.display = matchSearch && matchType ? '' : 'none';
+  });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FinanceOS - Dashboard</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap');
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0e0f11; --surface: #16181c; --surface2: #1c1f25;
+  --border: #2a2d35; --border2: #363b47;
+  --accent: #c8f04c; --accent2: #4cf0b4; --accent3: #4c9ff0;
+  --red: #f87171; --orange: #fb923c; --purple: #a78bfa;
+  --text: #f0f0f0; --text2: #c0c4cf; --muted: #6b7280;
+  --sidebar-w: 220px;
+}
+body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; display: flex; }
+
+/* SIDEBAR */
+.sidebar {
+  width: var(--sidebar-w); min-height: 100vh; background: var(--surface);
+  border-right: 1px solid var(--border); padding: 1.5rem 1rem;
+  display: flex; flex-direction: column; position: fixed; left: 0; top: 0; bottom: 0; z-index: 100;
+}
+.sidebar-brand { font-family: 'DM Serif Display', serif; font-size: 1.4rem; color: var(--accent); padding: 0 0.5rem; margin-bottom: 0.25rem; }
+.sidebar-user { font-size: 0.78rem; color: var(--muted); padding: 0 0.5rem; margin-bottom: 2rem; }
+.nav-label { font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); padding: 0 0.5rem; margin-bottom: 0.4rem; margin-top: 1rem; }
+.nav-item {
+  display: block; padding: 0.55rem 0.75rem; border-radius: 8px; color: var(--text2);
+  text-decoration: none; font-size: 0.88rem; font-weight: 400; cursor: pointer;
+  transition: all 0.15s; margin-bottom: 0.1rem; border: none; background: none; width: 100%; text-align: left;
+}
+.nav-item:hover, .nav-item.active { background: var(--surface2); color: var(--text); }
+.nav-item.active { color: var(--accent); font-weight: 500; }
+.sidebar-footer { margin-top: auto; border-top: 1px solid var(--border); padding-top: 1rem; }
+.logout-btn { display: block; padding: 0.55rem 0.75rem; border-radius: 8px; color: var(--muted); text-decoration: none; font-size: 0.85rem; transition: all 0.15s; }
+.logout-btn:hover { background: var(--surface2); color: var(--red); }
+
+/* MAIN */
+.main { margin-left: var(--sidebar-w); flex: 1; padding: 2rem; max-width: 1200px; }
+.page-header { margin-bottom: 2rem; }
+.page-title { font-family: 'DM Serif Display', serif; font-size: 2rem; color: var(--text); margin-bottom: 0.25rem; }
+.page-sub { color: var(--muted); font-size: 0.88rem; }
+
+/* STATS GRID */
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 1.25rem; position: relative; overflow: hidden;
+}
+.stat-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--accent-color, var(--accent));
+}
+.stat-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem; font-weight: 500; }
+.stat-value { font-size: 1.5rem; font-weight: 600; color: var(--text); font-family: 'DM Serif Display', serif; }
+.stat-sub { font-size: 0.78rem; color: var(--muted); margin-top: 0.25rem; }
+
+/* SECTIONS */
+.section { margin-bottom: 2.5rem; scroll-margin-top: 2rem; }
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+.section-title { font-size: 1rem; font-weight: 600; color: var(--text); }
+.section-count { font-size: 0.78rem; color: var(--muted); background: var(--surface2); padding: 0.2rem 0.6rem; border-radius: 20px; }
+
+/* ADD BUTTON */
+.add-btn {
+  background: var(--accent); color: #0e0f11; border: none; border-radius: 8px;
+  padding: 0.45rem 1rem; font-family: 'DM Sans', sans-serif; font-size: 0.82rem;
+  font-weight: 600; cursor: pointer; transition: opacity 0.2s;
+}
+.add-btn:hover { opacity: 0.85; }
+.add-btn.secondary {
+  background: var(--surface2); color: var(--text2); border: 1px solid var(--border2);
+}
+
+/* CARDS */
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+.item-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 1.1rem; position: relative; transition: border-color 0.2s;
+}
+.item-card:hover { border-color: var(--border2); }
+.item-card .card-title { font-weight: 600; font-size: 0.95rem; color: var(--text); margin-bottom: 0.25rem; }
+.item-card .card-sub { font-size: 0.8rem; color: var(--muted); margin-bottom: 0.75rem; }
+.item-card .card-amount { font-family: 'DM Serif Display', serif; font-size: 1.3rem; color: var(--accent); }
+.item-card .card-amount.red { color: var(--red); }
+.item-card .card-amount.orange { color: var(--orange); }
+.item-card .card-amount.purple { color: var(--purple); }
+.item-card .card-amount.blue { color: var(--accent3); }
+.card-meta { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem; margin-bottom: 0.75rem; }
+.badge {
+  font-size: 0.72rem; padding: 0.2rem 0.55rem; border-radius: 20px; font-weight: 500;
+  background: var(--surface2); color: var(--muted); border: 1px solid var(--border);
+}
+.badge.green { background: rgba(200,240,76,0.1); color: var(--accent); border-color: rgba(200,240,76,0.2); }
+.badge.red { background: rgba(248,113,113,0.1); color: var(--red); border-color: rgba(248,113,113,0.2); }
+.badge.orange { background: rgba(251,146,60,0.1); color: var(--orange); border-color: rgba(251,146,60,0.2); }
+.badge.blue { background: rgba(76,159,240,0.1); color: var(--accent3); border-color: rgba(76,159,240,0.2); }
+
+/* PROGRESS BAR */
+.progress-wrap { margin: 0.6rem 0; }
+.progress-info { display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--muted); margin-bottom: 0.3rem; }
+.progress-bar { height: 6px; background: var(--surface2); border-radius: 99px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--accent); border-radius: 99px; transition: width 0.5s ease; }
+.progress-fill.complete { background: var(--accent2); }
+
+/* CARD ACTIONS */
+.card-actions { display: flex; gap: 0.4rem; margin-top: 0.75rem; flex-wrap: wrap; }
+.action-btn {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
+  padding: 0.35rem 0.7rem; font-family: 'DM Sans', sans-serif; font-size: 0.78rem;
+  color: var(--text2); cursor: pointer; transition: all 0.15s;
+}
+.action-btn:hover { border-color: var(--border2); color: var(--text); }
+.action-btn.danger:hover { border-color: var(--red); color: var(--red); }
+.action-btn.success:hover { border-color: var(--accent); color: var(--accent); }
+
+/* MODAL */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+  z-index: 1000; align-items: center; justify-content: center; padding: 1rem;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+  padding: 1.75rem; width: 100%; max-width: 440px; max-height: 90vh; overflow-y: auto;
+  animation: modalIn 0.2s ease both;
+}
+@keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+.modal h3 { font-size: 1rem; font-weight: 600; margin-bottom: 1.25rem; color: var(--text); }
+.modal .close-btn {
+  position: absolute; top: 1rem; right: 1rem; background: none; border: none;
+  color: var(--muted); cursor: pointer; font-size: 1.2rem; line-height: 1;
+}
+.modal { position: relative; }
+
+/* FORM */
+.form-field { margin-bottom: 1rem; }
+.form-field label { display: block; font-size: 0.78rem; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.35rem; }
+.form-field input, .form-field select, .form-field textarea {
+  width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+  padding: 0.65rem 0.85rem; color: var(--text); font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem; outline: none; transition: border-color 0.2s;
+}
+.form-field input:focus, .form-field select:focus, .form-field textarea:focus { border-color: var(--accent); }
+.form-field textarea { resize: vertical; min-height: 70px; }
+.form-field select option { background: var(--surface); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+.submit-btn {
+  width: 100%; background: var(--accent); color: #0e0f11; border: none; border-radius: 8px;
+  padding: 0.75rem; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 600;
+  cursor: pointer; margin-top: 0.5rem; transition: opacity 0.2s;
+}
+.submit-btn:hover { opacity: 0.88; }
+
+/* NET MONTHLY BAR */
+.net-bar {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 1.25rem 1.5rem; margin-bottom: 2rem; display: flex; align-items: center; gap: 2rem; flex-wrap: wrap;
+}
+.net-item { flex: 1; min-width: 120px; }
+.net-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.25rem; }
+.net-value { font-family: 'DM Serif Display', serif; font-size: 1.3rem; }
+.net-value.positive { color: var(--accent2); }
+.net-value.negative { color: var(--red); }
+.net-divider { width: 1px; height: 40px; background: var(--border); }
+
+/* TRANSACTIONS TABLE */
+.tx-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+.tx-table th { text-align: left; padding: 0.6rem 1rem; color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.07em; border-bottom: 1px solid var(--border); font-weight: 500; }
+.tx-table td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); color: var(--text2); }
+.tx-table tr:last-child td { border-bottom: none; }
+.tx-table tr:hover td { background: var(--surface2); }
+.tx-type { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.72rem; font-weight: 500; text-transform: capitalize; }
+.tx-type.deposit { background: rgba(200,240,76,0.12); color: var(--accent); }
+.tx-type.withdrawal { background: rgba(248,113,113,0.12); color: var(--red); }
+.tx-type.goal_deposit { background: rgba(76,240,180,0.12); color: var(--accent2); }
+.tx-type.debt_payment { background: rgba(251,146,60,0.12); color: var(--orange); }
+.tx-type.installment { background: rgba(167,139,250,0.12); color: var(--purple); }
+.tx-amount.credit { color: var(--accent2); }
+.tx-amount.debit { color: var(--red); }
+
+/* EMPTY STATE */
+.empty { text-align: center; padding: 2.5rem; color: var(--muted); font-size: 0.88rem; background: var(--surface); border: 1px dashed var(--border); border-radius: 12px; }
+.empty-title { font-size: 0.95rem; color: var(--text2); margin-bottom: 0.5rem; font-weight: 500; }
+
+/* PROFILE SECTION */
+.profile-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; max-width: 480px; }
+
+/* INSTALLMENT PROGRESS */
+.inst-progress { font-size: 0.78rem; color: var(--muted); margin-top: 0.35rem; }
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .sidebar { width: 60px; padding: 1rem 0.5rem; }
+  .sidebar-brand, .sidebar-user, .nav-label, .nav-item span { display: none; }
+  .main { margin-left: 60px; }
+}
+@media (max-width: 600px) {
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .main { padding: 1rem; }
+  .form-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-brand">FinanceOS</div>
+  <div class="sidebar-user">{{ user.full_name or user.username }}</div>
+
+  <div class="nav-label">Overview</div>
+  <button class="nav-item active" onclick="scrollTo('overview')">Dashboard</button>
+  <button class="nav-item" onclick="scrollTo('income')">Income</button>
+
+  <div class="nav-label">Money</div>
+  <button class="nav-item" onclick="scrollTo('accounts')">Savings Accounts</button>
+  <button class="nav-item" onclick="scrollTo('goals')">Goals</button>
+  <button class="nav-item" onclick="scrollTo('expenses')">Expenses</button>
+
+  <div class="nav-label">Obligations</div>
+  <button class="nav-item" onclick="scrollTo('debts')">Debts</button>
+  <button class="nav-item" onclick="scrollTo('installments')">Installments</button>
+  <button class="nav-item" onclick="scrollTo('subscriptions')">Subscriptions</button>
+
+  <div class="nav-label">History</div>
+  <a class="nav-item" href="/transactions">Transactions</a>
+
+  <div class="nav-label">Account</div>
+  <button class="nav-item" onclick="scrollTo('profile')">Profile</button>
+
+  <div class="sidebar-footer">
+    <a class="logout-btn" href="/logout">Sign out</a>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+
+  <!-- HEADER -->
+  <div class="page-header" id="overview">
+    <div class="page-title">Good day, {{ (user.full_name or user.username).split()[0] }}</div>
+    <div class="page-sub">{{ today }} &mdash; Your financial overview</div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-grid">
+    <div class="stat-card" style="--accent-color: var(--accent2)">
+      <div class="stat-label">Total Savings</div>
+      <div class="stat-value">Rs {{ "{:,.0f}".format(total_savings) }}</div>
+      <div class="stat-sub">across {{ accounts|length }} account(s)</div>
+    </div>
+    <div class="stat-card" style="--accent-color: var(--accent)">
+      <div class="stat-label">Monthly Income</div>
+      <div class="stat-value">Rs {{ "{:,.0f}".format(total_income) }}</div>
+      <div class="stat-sub">salary + other sources</div>
+    </div>
+    <div class="stat-card" style="--accent-color: var(--orange)">
+      <div class="stat-label">Monthly Outgoing</div>
+      <div class="stat-value">Rs {{ "{:,.0f}".format(total_outgoing) }}</div>
+      <div class="stat-sub">expenses + installments + subs</div>
+    </div>
+    <div class="stat-card" style="--accent-color: {% if net_monthly >= 0 %}var(--accent2){% else %}var(--red){% endif %}">
+      <div class="stat-label">Net Monthly</div>
+      <div class="stat-value" style="color: {% if net_monthly >= 0 %}var(--accent2){% else %}var(--red){% endif %}">
+        Rs {{ "{:,.0f}".format(net_monthly) }}
+      </div>
+      <div class="stat-sub">{% if net_monthly >= 0 %}surplus{% else %}deficit{% endif %}</div>
+    </div>
+  </div>
+
+  <!-- NET BAR -->
+  <div class="net-bar">
+    <div class="net-item">
+      <div class="net-label">Salary</div>
+      <div class="net-value">Rs {{ "{:,.0f}".format(user.monthly_salary) }}</div>
+    </div>
+    <div class="net-divider"></div>
+    <div class="net-item">
+      <div class="net-label">Fixed Expenses</div>
+      <div class="net-value">Rs {{ "{:,.0f}".format(total_monthly_expenses) }}</div>
+    </div>
+    <div class="net-divider"></div>
+    <div class="net-item">
+      <div class="net-label">Installments</div>
+      <div class="net-value">Rs {{ "{:,.0f}".format(total_installments) }}</div>
+    </div>
+    <div class="net-divider"></div>
+    <div class="net-item">
+      <div class="net-label">Subscriptions</div>
+      <div class="net-value">Rs {{ "{:,.0f}".format(total_subscriptions) }}</div>
+    </div>
+    <div class="net-divider"></div>
+    <div class="net-item">
+      <div class="net-label">Total Debt</div>
+      <div class="net-value" style="color:var(--red)">Rs {{ "{:,.0f}".format(total_debt) }}</div>
+    </div>
+  </div>
+
+  <!-- INCOME SOURCES -->
+  <div class="section" id="income">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Income Sources</div>
+      </div>
+      <button class="add-btn" onclick="openModal('modal-income')">+ Add Income</button>
+    </div>
+    {% if income_sources %}
+    <div class="card-grid">
+      {% for inc in income_sources %}
+      <div class="item-card">
+        <div class="card-title">{{ inc.name }}</div>
+        <div class="card-sub">{{ inc.frequency }} &bull; {{ inc.type }}</div>
+        <div class="card-amount" style="color:var(--accent2)">Rs {{ "{:,.2f}".format(inc.amount) }}</div>
+        {% if inc.notes %}<div class="card-sub" style="margin-top:0.4rem">{{ inc.notes }}</div>{% endif %}
+        <div class="card-actions">
+          <form method="post" action="/income/{{ inc.id }}/delete" onsubmit="return confirm('Delete this income source?')">
+            <button type="submit" class="action-btn danger">Delete</button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty"><div class="empty-title">No income sources</div>Add your salary and freelance income sources</div>
+    {% endif %}
+  </div>
+
+  <!-- SAVINGS ACCOUNTS -->
+  <div class="section" id="accounts">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Savings Accounts</div>
+        <div class="section-count">Total: Rs {{ "{:,.0f}".format(total_savings) }}</div>
+      </div>
+      <button class="add-btn" onclick="openModal('modal-account')">+ Add Account</button>
+    </div>
+    {% if accounts %}
+    <div class="card-grid">
+      {% for acc in accounts %}
+      <div class="item-card">
+        <div class="card-title">{{ acc.name }}</div>
+        <div class="card-sub">{{ acc.bank or 'No bank specified' }} &bull; {{ acc.account_type }}</div>
+        <div class="card-amount" style="color:var(--accent2)">Rs {{ "{:,.2f}".format(acc.balance) }}</div>
+        {% if acc.interest_rate %}<div class="card-meta"><span class="badge green">{{ acc.interest_rate }}% p.a.</span></div>{% endif %}
+        {% if acc.notes %}<div class="card-sub">{{ acc.notes }}</div>{% endif %}
+        <div class="card-actions">
+          <button class="action-btn success" onclick="openDepositModal({{ acc.id }}, '{{ acc.name }}', 'deposit')">Deposit</button>
+          <button class="action-btn" onclick="openDepositModal({{ acc.id }}, '{{ acc.name }}', 'withdraw')">Withdraw</button>
+          <form method="post" action="/accounts/{{ acc.id }}/delete" onsubmit="return confirm('Delete this account?')">
+            <button type="submit" class="action-btn danger">Delete</button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty"><div class="empty-title">No savings accounts</div>Add your Sampath, BOC or other savings accounts</div>
+    {% endif %}
+  </div>
+
+  <!-- GOALS -->
+  <div class="section" id="goals">
+    <div class="section-header">
+      <div><div class="section-title">Savings Goals</div></div>
+      <button class="add-btn" onclick="openModal('modal-goal')">+ Add Goal</button>
+    </div>
+    {% if goals %}
+    <div class="card-grid">
+      {% for goal in goals %}
+      <div class="item-card">
+        <div class="card-title">{{ goal.title }}</div>
+        <div class="card-sub">{{ goal.category }}{% if goal.deadline %} &bull; by {{ goal.deadline }}{% endif %}</div>
+        <div class="card-amount {% if goal.status == 'completed' %}{% endif %}">
+          Rs {{ "{:,.0f}".format(goal.current_amount) }}
+          <span style="font-size:0.85rem;color:var(--muted);font-family:'DM Sans',sans-serif;"> / Rs {{ "{:,.0f}".format(goal.target_amount) }}</span>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-info">
+            <span>{{ goal.progress }}% complete</span>
+            <span>Rs {{ "{:,.0f}".format(goal.target_amount - goal.current_amount) }} remaining</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill {% if goal.progress >= 100 %}complete{% endif %}" style="width: {{ [goal.progress, 100]|min }}%"></div>
+          </div>
+        </div>
+        <div class="card-meta">
+          <span class="badge {% if goal.status == 'completed' %}green{% else %}blue{% endif %}">{{ goal.status }}</span>
+        </div>
+        {% if goal.description %}<div class="card-sub">{{ goal.description }}</div>{% endif %}
+        <div class="card-actions">
+          {% if goal.status != 'completed' %}
+          <button class="action-btn success" onclick="openGoalModal({{ goal.id }}, '{{ goal.title }}')">Add Savings</button>
+          {% endif %}
+          <form method="post" action="/goals/{{ goal.id }}/delete" onsubmit="return confirm('Delete this goal?')">
+            <button type="submit" class="action-btn danger">Delete</button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty"><div class="empty-title">No goals set</div>Set your car fund, emergency fund or other savings goals</div>
+    {% endif %}
+  </div>
+
+  <!-- MONTHLY EXPENSES -->
+  <div class="section" id="expenses">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Monthly Expenses</div>
+        <div class="section-count">Total: Rs {{ "{:,.0f}".format(total_monthly_expenses) }}/mo</div>
+      </div>
+      <button class="add-btn" onclick="openModal('modal-expense')">+ Add Expense</button>
+    </div>
+    {% if expenses %}
+    <div class="card-grid">
+      {% for exp in expenses %}
+      <div class="item-card">
+        <div class="card-title">{{ exp.name }}</div>
+        <div class="card-sub">{{ exp.category }}{% if exp.due_day %} &bull; due on {{ exp.due_day }}th{% endif %}</div>
+        <div class="card-amount orange">Rs {{ "{:,.2f}".format(exp.amount) }}<span style="font-size:0.8rem;color:var(--muted);font-family:'DM Sans',sans-serif">/mo</span></div>
+        {% if exp.notes %}<div class="card-sub" style="margin-top:0.4rem">{{ exp.notes }}</div>{% endif %}
+        <div class="card-actions">
+          <form method="post" action="/expenses/{{ exp.id }}/delete" onsubmit="return confirm('Delete this expense?')">
+            <button type="submit" class="action-btn danger">Delete</button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty"><div class="empty-title">No expenses added</div>Add your loan payments, internet, seettu and other fixed costs</div>
+    {% endif %}
+  </div>
+
+  <!-- DEBTS -->
+  <div class="section" id="debts">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Debts</div>
+        <div class="section-count">Total owed: Rs {{ "{:,.0f}".format(total_debt) }}</div>
+      </div>
+      <button class="add-btn" onclick="openModal('modal-debt')">+ Add Debt</button>
+    </div>
+    {% if debts %}
+    <div class="card-grid">
+      {% for debt in debts %}
+      <div class="item-card">
+        <div class="card-title">{{ debt.name }}</div>
+        <div class="card-sub">{{ debt.lender or 'No lender' }}{% if debt.interest_rate %} &bull; {{ debt.interest_rate }}% interest{% endif %}</div>
+        <div class="card-amount red">Rs {{ "{:,.2f}".format(debt.remaining_amount) }}</div>
+        <div class="progress-wrap">
+          <div class="progress-info">
+            <span>Remaining</span>
+            <span>of Rs {{ "{:,.0f}".format(debt.total_amount) }}</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: {{ [(1 - debt.remaining_amount/debt.total_amount)*100, 100]|min if debt.total_amount > 0 else 0 }}%; background: var(--red)"></div>
+          </div>
+        </div>
+        <div class="card-meta">
+          {% if debt.monthly_payment %}<span class="badge orange">Rs {{ "{:,.0f}".format(debt.monthly_payment) }}/mo</span>{% endif %}
+          {% if debt.due_date %}<span class="badge">Due: {{ debt.due_date }}</span>{% endif %}
+        </div>
+        {% if debt.notes %}<div class="card-sub">{{ debt.notes }}</div>{% endif %}
+        <div class="card-actions">
+          <button class="action-btn success" onclick="openPayDebtModal({{ debt.id }}, '{{ debt.name }}', {{ debt.monthly_payment }})">Make Payment</button>
+          <form method="post" action="/debts/{{ debt.id }}/delete" onsubmit="return confirm('Delete this debt?')">
+            <button type="submit" class="action-btn danger">Delete</button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty"><div class="empty-title">No debts recorded</div>Add HSBC, Sampath CC or other debts to track</div>
+    {% endif %}
+  </div>
+
+  <!-- INSTALLMENTS -->
+  <div class="section" id="installments">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Installments</div>
+        <div class="section-count">Total: Rs {{ "{:,.0f}".format(total_installments) }}/mo</div>
+      </div>
+      <button class="add-btn" onclick="openModal('modal-installment')">+ Add Installment</button>
+    </div>
+    {% if installments %}
+    <div class="card-grid">
+      {% for inst in installments %}
+      <div class="item-card">
+        <div class="card-title">{{ inst.name }}</div>
+        <div class="card-sub">{{ inst.provider or 'No provider' }}{% if inst.due_day %} &bull; due {{ inst.due_day }}th{% endif %}</div>
+        <div class="card-amount purple">Rs {{ "{:,.2f}".format(inst.monthly_amount) }}<span style="font-size:0.8rem;color:var(--muted);font-family:'DM Sans',sans-serif">/mo</span></div>
+        <div class="progress-wrap">
+          <div class="progress-info">
+            <span>{{ inst.paid_months }}/{{ inst.total_months }} paid</span>
+            <span>{{ inst.total_months - inst.paid_months }} remaining</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: {{ (inst.paid_months/inst.total_months*100) if inst.total_months > 0 else 0 }}%; background: var(--purple)"></div>
+          </div>
+        </div>
+        <div class="card-meta">
+          <span class="badge">Total: Rs {{ "{:,.0f}".format(inst.total_amount) }}</span>
+        </div>
+        {% if inst.notes %}<div class="card-sub">{{ inst.notes }}</div>{% endif %}
+        <div class="card-actions">
+          <form method="post" action="/installments/{{ inst.id }}/pay">
+            <button type="submit" class="action-btn success">Mark Paid</button>
+          </form>
+          <form method="post" action="/installments/{{ inst.id }}/delete" onsubmit="return confirm('Delete this installment?')">
+            <button type="submit" class="action-btn danger">Delete</button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty"><div class="empty-title">No installments</div>Add phone, TV, Koko or Mint Pay installments</div>
+    {% endif %}
+  </div>
+
+  <!-- SUBSCRIPTIONS -->
+  <div class="section" id="subscriptions">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Subscriptions</div>
+        <div class="section-count">Active: Rs {{ "{:,.0f}".format(total_subscriptions) }}/mo</div>
+      </div>
+      <button class="add-btn" onclick="openModal('modal-subscription')">+ Add Subscription</button>
+    </div>
+    {% if subscriptions %}
+    <div class="card-grid">
+      {% for sub in subscriptions %}
+      <div class="item-card" style="{% if not sub.is_active %}opacity:0.5{% endif %}">
+        <div class="card-title">{{ sub.name }}</div>
+        <div class="card-sub">{{ sub.billing_cycle }}{% if sub.next_billing_date %} &bull; next: {{ sub.next_billing_date }}{% endif %}</div>
+        <div class="card-amount blue">{{ sub.currency }} {{ "{:,.2f}".format(sub.amount) }}</div>
+        <div class="card-meta">
+          <span class="badge {% if sub.is_active %}green{% else %}red{% endif %}">{% if sub.is_active %}Active{% else %}Cancelled{% endif %}</span>
+        </div>
+        {% if sub.notes %}<div class="card-sub">{{ sub.notes }}</div>{% endif %}
+        <div class="card-actions">
+          <form method="post" action="/subscriptions/{{ sub.id }}/toggle">
+            <button type="submit" class="action-btn">{% if sub.is_active %}Cancel{% else %}Reactivate{% endif %}</button>
+          </form>
+          <form method="post" action="/subscriptions/{{ sub.id }}/delete" onsubmit="return confirm('Delete this subscription?')">
+            <button type="submit" class="action-btn danger">Delete</button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty"><div class="empty-title">No subscriptions</div>Add Netflix, Claude, HBO and other subscriptions</div>
+    {% endif %}
+  </div>
+
+  <!-- RECENT TRANSACTIONS -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">Recent Transactions</div>
+      <a href="/transactions" style="color:var(--accent);font-size:0.85rem;text-decoration:none">View all</a>
+    </div>
+    {% if recent_tx %}
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+      <table class="tx-table">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Account/Goal</th>
+            <th>Date</th>
+            <th style="text-align:right">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for tx in recent_tx %}
+          <tr>
+            <td><span class="tx-type {{ tx.type }}">{{ tx.type.replace('_',' ') }}</span></td>
+            <td>{{ tx.description or '-' }}</td>
+            <td>{{ tx.account_name or tx.goal_title or '-' }}</td>
+            <td>{{ tx.date }}</td>
+            <td style="text-align:right" class="tx-amount {% if tx.type in ['deposit','goal_deposit'] %}credit{% else %}debit{% endif %}">
+              {% if tx.type not in ['deposit','goal_deposit'] %}-{% endif %}Rs {{ "{:,.2f}".format(tx.amount) }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty"><div class="empty-title">No transactions yet</div>Transactions appear here when you deposit or withdraw</div>
+    {% endif %}
+  </div>
+
+  <!-- PROFILE -->
+  <div class="section" id="profile">
+    <div class="section-header"><div class="section-title">Profile Settings</div></div>
+    <div class="profile-card">
+      <form method="post" action="/profile/update">
+        <div class="form-field">
+          <label>Full Name</label>
+          <input type="text" name="full_name" value="{{ user.full_name or '' }}" required>
+        </div>
+        <div class="form-field">
+          <label>Monthly Net Salary (Rs)</label>
+          <input type="number" name="monthly_salary" value="{{ user.monthly_salary }}" step="0.01">
+        </div>
+        <button type="submit" class="submit-btn">Update Profile</button>
+      </form>
+    </div>
+  </div>
+
+</main>
+
+<!-- MODALS -->
+
+<!-- Income Modal -->
+<div class="modal-overlay" id="modal-income">
+  <div class="modal">
+    <button class="close-btn" onclick="closeModal('modal-income')">&times;</button>
+    <h3>Add Income Source</h3>
+    <form method="post" action="/income/add">
+      <div class="form-field"><label>Name</label><input type="text" name="name" placeholder="Salary, Freelance..." required></div>
+      <div class="form-row">
+        <div class="form-field"><label>Amount (Rs)</label><input type="number" name="amount" step="0.01" required></div>
+        <div class="form-field"><label>Type</label>
+          <select name="type"><option value="fixed">Fixed</option><option value="variable">Variable</option></select>
+        </div>
+      </div>
+      <div class="form-field"><label>Frequency</label>
+        <select name="frequency"><option value="monthly">Monthly</option><option value="weekly">Weekly</option><option value="annual">Annual</option></select>
+      </div>
+      <div class="form-field"><label>Notes</label><textarea name="notes" placeholder="Optional notes..."></textarea></div>
+      <button type="submit" class="submit-btn">Add Income Source</button>
+    </form>
+  </div>
+</div>
+
+<!-- Account Modal -->
+<div class="modal-overlay" id="modal-account">
+  <div class="modal">
+    <button class="close-btn" onclick="closeModal('modal-account')">&times;</button>
+    <h3>Add Savings Account</h3>
+    <form method="post" action="/accounts/add">
+      <div class="form-field"><label>Account Name</label><input type="text" name="name" placeholder="e.g. Sampath Hit Saver" required></div>
+      <div class="form-row">
+        <div class="form-field"><label>Bank</label><input type="text" name="bank" placeholder="Sampath, BOC..."></div>
+        <div class="form-field"><label>Type</label>
+          <select name="account_type"><option value="savings">Savings</option><option value="fixed_deposit">Fixed Deposit</option><option value="dream_planner">Dream Planner</option><option value="current">Current</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>Current Balance (Rs)</label><input type="number" name="balance" step="0.01" value="0"></div>
+        <div class="form-field"><label>Interest Rate (%)</label><input type="number" name="interest_rate" step="0.01" value="0" placeholder="e.g. 7.5"></div>
+      </div>
+      <div class="form-field"><label>Notes</label><textarea name="notes" placeholder="Optional notes..."></textarea></div>
+      <button type="submit" class="submit-btn">Add Account</button>
+    </form>
+  </div>
+</div>
+
+<!-- Deposit/Withdraw Modal -->
+<div class="modal-overlay" id="modal-deposit">
+  <div class="modal">
+    <button class="close-btn" onclick="closeModal('modal-deposit')">&times;</button>
+    <h3 id="deposit-modal-title">Deposit</h3>
+    <form method="post" id="deposit-form">
+      <div class="form-field"><label>Amount (Rs)</label><input type="number" name="amount" step="0.01" required min="0.01"></div>
+      <div class="form-field"><label>Description</label><input type="text" name="description" placeholder="e.g. Monthly savings"></div>
+      <button type="submit" class="submit-btn">Confirm</button>
+    </form>
+  </div>
+</div>
+
+<!-- Goal Modal -->
+<div class="modal-overlay" id="modal-goal">
+  <div class="modal">
+    <button class="close-btn" onclick="closeModal('modal-goal')">&times;</button>
+    <h3>Add Savings Goal</h3>
+    <form method="post" action="/goals/add">
+      <div class="form-field"><label>Goal Title</label><input type="text" name="title" placeholder="e.g. Car Downpayment" required></div>
+      <div class="form-row">
+        <div class="form-field"><label>Target Amount (Rs)</label><input type="number" name="target_amount" step="0.01" required></div>
+        <div class="form-field"><label>Category</label>
+          <select name="category"><option value="car">Car</option><option value="emergency">Emergency Fund</option><option value="general">General</option><option value="travel">Travel</option><option value="house">House</option></select>
+        </div>
+      </div>
+      <div class="form-field"><label>Deadline (optional)</label><input type="date" name="deadline"></div>
+      <div class="form-field"><label>Description</label><textarea name="description" placeholder="What is this goal for?"></textarea></div>
+      <button type="submit" class="submit-btn">Create Goal</button>
+    </form>
+  </div>
+</div>
+
+<!-- Add to Goal Modal -->
+<div class="modal-overlay" id="modal-goal-add">
+  <div class="modal">
+    <button class="close-btn" onclick="closeModal('modal-goal-add')">&times;</button>
+    <h3 id="goal-add-title">Add to Goal</h3>
+    <form method="post" id="goal-add-form">
+      <div class="form-field"><label>Amount (Rs)</label><input type="number" name="amount" step="0.01" required min="0.01"></div>
+      <div class="form-field"><label>Description</label><input type="text" name="description" value="Added savings"></div>
+      <button type="submit" class="submit-btn">Add to Goal</button>
+    </form>
+  </div>
+</div>
+
+<!-- Expense Modal -->
+<div class="modal-overlay" id="modal-expense">
+  <div class="modal">
+    <button class="close-btn" onclick="closeModal('modal-expense')">&times;</button>
+    <h3>Add Monthly Expense</h3>
+    <form method="post" action="/expenses/add">
+      <div class="form-field"><label>Expense Name</label><input type="text" name="name" placeholder="e.g. Internet, Loan Payment" required></div>
+      <div class="form-row">
+        <div class="form-field"><label>Amount (Rs)</label><input type="number" name="amount" step="0.01" required></div>
+        <div class="form-field"><label>Due Day</label><input type="number" name="due_day" min="1" max="31" value="1"></div>
+      </div>
+      <div class="form-field"><label>Category</label>
+        <select name="category"><option value="fixed">Fixed</option><option value="utility">Utility</option><option value="transport">Transport</option><option value="food">Food</option><option value="other">Other</option></select>
+      </div>
+      <div class="form-field"><label>Notes</label><textarea name="notes" placeholder="Optional..."></textarea></div>
+      <button type="submit" class="submit-btn">Add Expense</button>
+    </form>
+  </div>
+</div>
+
+<!-- Debt Modal -->
+<div class="modal-overlay" id="modal-debt">
+  <div class="modal">
+    <button class="close-btn" onclick="closeModal('modal-debt')">&times;</button>
+    <h3>Add Debt</h3>
+    <form method="post" action="/debts/add">
+      <div class="form-field"><label>Debt Name</label><input type="text" name="name" placeholder="e.g. HSBC Credit Card" required></div>
+      <div class="form-field"><label>Lender</label><input type="text" name="lender" placeholder="e.g. HSBC, Sampath Bank"></div>
+      <div class="form-row">
+        <div class="form-field"><label>Total Amount (Rs)</label><input type="number" name="total_amount" step="0.01" required></div>
+        <div class="form-field"><label>Remaining (Rs)</label><input type="number" name="remaining_amount" step="0.01" required></div>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>Monthly Payment (Rs)</label><input type="number" name="monthly_payment" step="0.01" value="0"></div>
+        <div class="form-field"><label>Interest Rate (%)</label><input type="number" name="interest_rate" step="0.01" value="0"></div>
+      </div>
+      <div class="form-field"><label>Due Date</label><input type="date" name="due_date"></div>
+      <div class="form-field"><label>Notes</label><textarea name="notes" placeholder="e.g. HSBC exceeded limit, need extension"></textarea></div>
+      <button type="submit" class="submit-btn">Add Debt</button>
+    </form>
+  </div>
+</div>
+
+<!-- Pay Debt Modal -->
+<div class="modal-overlay" id="modal-pay-debt">
+  <div class="modal">
+    <button class="close-btn" onclick="closeModal('modal-pay-debt')">&times;</button>
+    <h3 id="pay-debt-title">Make Payment</h3>
+    <form method="post" id="pay-debt-form">
+      <div class="form-field"><label>Payment Amount (Rs)</label><input type="number" name="amount" id="pay-debt-amount" step="0.01" required></div>
+      <button type="submit" class="submit-btn">Record Payment</button>
+    </form>
+  </div>
+</div>
+
+<!-- Installment Modal -->
+<div class="modal-overlay" id="modal-installment">
+  <div class="modal">
+    <button class="close-btn" onclick="closeModal('modal-installment')">&times;</button>
+    <h3>Add Installment</h3>
+    <form method="post" action="/installments/add">
+      <div class="form-field"><label>Name</label><input type="text" name="name" placeholder="e.g. Phone, TV" required></div>
+      <div class="form-field"><label>Provider</label><input type="text" name="provider" placeholder="e.g. Koko, Mint Pay, Pay Z"></div>
+      <div class="form-row">
+        <div class="form-field"><label>Total Amount (Rs)</label><input type="number" name="total_amount" step="0.01" required></div>
+        <div class="form-field"><label>Monthly Amount (Rs)</label><input type="number" name="monthly_amount" step="0.01" required></div>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>Total Months</label><input type="number" name="total_months" required min="1"></div>
+        <div class="form-field"><label>Months Already Paid</label><input type="number" name="paid_months" value="0" min="0"></div>
+      </div>
+      <div class="form-field"><label>Due Day of Month</label><input type="number" name="due_day" min="1" max="31" value="1"></div>
+      <div class="form-field"><label>Notes</label><textarea name="notes" placeholder="Optional..."></textarea></div>
+      <button type="submit" class="submit-btn">Add Installment</button>
+    </form>
+  </div>
+</div>
+
+<!-- Subscription Modal -->
+<div class="modal-overlay" id="modal-subscription">
+  <div class="modal">
+    <button class="close-btn" onclick="closeModal('modal-subscription')">&times;</button>
+    <h3>Add Subscription</h3>
+    <form method="post" action="/subscriptions/add">
+      <div class="form-field"><label>Name</label><input type="text" name="name" placeholder="e.g. Netflix, Claude Pro" required></div>
+      <div class="form-row">
+        <div class="form-field"><label>Amount</label><input type="number" name="amount" step="0.01" required></div>
+        <div class="form-field"><label>Currency</label>
+          <select name="currency"><option value="LKR">LKR</option><option value="USD">USD</option><option value="GBP">GBP</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>Billing Cycle</label>
+          <select name="billing_cycle"><option value="monthly">Monthly</option><option value="annual">Annual</option><option value="weekly">Weekly</option></select>
+        </div>
+        <div class="form-field"><label>Next Billing Date</label><input type="date" name="next_billing_date"></div>
+      </div>
+      <div class="form-field"><label>Notes</label><textarea name="notes" placeholder="Optional..."></textarea></div>
+      <button type="submit" class="submit-btn">Add Subscription</button>
+    </form>
+  </div>
+</div>
+
+<script>
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) closeModal(overlay.id);
+  });
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.open').forEach(m => closeModal(m.id));
+  }
+});
+function scrollTo(id) {
+  document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  event.target.classList.add('active');
+}
+function openDepositModal(accId, accName, type) {
+  const form = document.getElementById('deposit-form');
+  const title = document.getElementById('deposit-modal-title');
+  form.action = `/accounts/${accId}/${type}`;
+  title.textContent = type === 'deposit' ? `Deposit to ${accName}` : `Withdraw from ${accName}`;
+  openModal('modal-deposit');
+}
+function openGoalModal(goalId, goalTitle) {
+  const form = document.getElementById('goal-add-form');
+  const title = document.getElementById('goal-add-title');
+  form.action = `/goals/${goalId}/add-savings`;
+  title.textContent = `Add to: ${goalTitle}`;
+  openModal('modal-goal-add');
+}
+function openPayDebtModal(debtId, debtName, monthlyPayment) {
+  const form = document.getElementById('pay-debt-form');
+  const title = document.getElementById('pay-debt-title');
+  const amountInput = document.getElementById('pay-debt-amount');
+  form.action = `/debts/${debtId}/pay`;
+  title.textContent = `Pay: ${debtName}`;
+  if (monthlyPayment > 0) amountInput.value = monthlyPayment;
+  openModal('modal-pay-debt');
+}
+</script>
+</body>
+</html>
