@@ -11,7 +11,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy via SSH
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Sync files to server
+        uses: burnett01/rsync-deployments@7.0.1
+        with:
+          switches: -avz --delete --exclude='finance.db' --exclude='venv/' --exclude='__pycache__/' --exclude='.git/' --exclude='*.pyc'
+          path: ./
+          remote_path: /var/www/financeapp/
+          remote_host: ${{ secrets.SERVER_HOST }}
+          remote_user: ${{ secrets.SERVER_USER }}
+          remote_key: ${{ secrets.SERVER_SSH_KEY }}
+
+      - name: Restart app
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -21,17 +34,7 @@ jobs:
           script: |
             set -e
             cd /var/www/financeapp
-
-            echo "--- Pulling latest code ---"
-            git pull origin main
-
-            echo "--- Installing dependencies ---"
             venv/bin/pip install -r requirements.txt --quiet
-
-            echo "--- Restarting app ---"
             sudo supervisorctl restart financeapp
-
-            echo "--- Checking status ---"
             sudo supervisorctl status financeapp
-
             echo "--- Done ---"
