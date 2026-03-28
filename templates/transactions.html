@@ -8,46 +8,42 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap');
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg: #0e0f11; --surface: #16181c; --surface2: #1c1f25;
-  --border: #2a2d35; --border2: #363b47;
+  --bg: #0e0f11; --surface: #16181c; --surface2: #1c1f25; --border: #2a2d35;
   --accent: #c8f04c; --accent2: #4cf0b4; --accent3: #4c9ff0;
   --red: #f87171; --orange: #fb923c; --purple: #a78bfa;
-  --text: #f0f0f0; --text2: #c0c4cf; --muted: #6b7280;
-  --sidebar-w: 220px;
+  --text: #f0f0f0; --text2: #c0c4cf; --muted: #6b7280; --sidebar-w: 220px;
 }
-body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; display: flex; }
-.sidebar {
-  width: var(--sidebar-w); min-height: 100vh; background: var(--surface);
-  border-right: 1px solid var(--border); padding: 1.5rem 1rem;
-  display: flex; flex-direction: column; position: fixed; left: 0; top: 0; bottom: 0;
-}
+body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
+.sidebar { width: var(--sidebar-w); min-height: 100vh; background: var(--surface); border-right: 1px solid var(--border); padding: 1.5rem 1rem; display: flex; flex-direction: column; position: fixed; left: 0; top: 0; bottom: 0; z-index: 200; transition: transform 0.3s ease; }
 .sidebar-brand { font-family: 'DM Serif Display', serif; font-size: 1.4rem; color: var(--accent); padding: 0 0.5rem; margin-bottom: 0.25rem; }
 .sidebar-user { font-size: 0.78rem; color: var(--muted); padding: 0 0.5rem; margin-bottom: 2rem; }
-.nav-item { display: block; padding: 0.55rem 0.75rem; border-radius: 8px; color: var(--text2); text-decoration: none; font-size: 0.88rem; cursor: pointer; transition: all 0.15s; margin-bottom: 0.1rem; }
+.nav-item { display: block; padding: 0.55rem 0.75rem; border-radius: 8px; color: var(--text2); text-decoration: none; font-size: 0.88rem; transition: all 0.15s; margin-bottom: 0.1rem; }
 .nav-item:hover { background: var(--surface2); color: var(--text); }
 .nav-item.active { background: var(--surface2); color: var(--accent); font-weight: 500; }
 .sidebar-footer { margin-top: auto; border-top: 1px solid var(--border); padding-top: 1rem; }
 .logout-btn { display: block; padding: 0.55rem 0.75rem; border-radius: 8px; color: var(--muted); text-decoration: none; font-size: 0.85rem; transition: all 0.15s; }
 .logout-btn:hover { background: var(--surface2); color: var(--red); }
-.main { margin-left: var(--sidebar-w); flex: 1; padding: 2rem; }
-.page-title { font-family: 'DM Serif Display', serif; font-size: 2rem; margin-bottom: 0.25rem; }
-.page-sub { color: var(--muted); font-size: 0.88rem; margin-bottom: 2rem; }
-.back-link { display: inline-block; color: var(--accent); text-decoration: none; font-size: 0.85rem; margin-bottom: 1.5rem; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 150; }
+.sidebar-overlay.open { display: block; }
+.sidebar.open { transform: translateX(0) !important; }
+.topbar-mobile { display: none; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+.burger { background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; padding: 0.25rem; line-height: 1; }
+.topbar-title { font-family: 'DM Serif Display', serif; font-size: 1.1rem; color: var(--accent); }
+.main { margin-left: var(--sidebar-w); flex: 1; padding: 2rem; min-width: 0; }
+.page-title { font-family: 'DM Serif Display', serif; font-size: 1.8rem; margin-bottom: 0.25rem; }
+.page-sub { color: var(--muted); font-size: 0.88rem; margin-bottom: 1.5rem; }
+.back-link { display: inline-block; color: var(--accent); text-decoration: none; font-size: 0.85rem; margin-bottom: 1.25rem; }
 .filter-bar { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
-.filter-bar input, .filter-bar select {
-  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
-  padding: 0.55rem 0.85rem; color: var(--text); font-family: 'DM Sans', sans-serif;
-  font-size: 0.88rem; outline: none; transition: border-color 0.2s;
-}
+.filter-bar input, .filter-bar select { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem 0.85rem; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.2s; -webkit-appearance: none; }
 .filter-bar input:focus, .filter-bar select:focus { border-color: var(--accent); }
-.filter-bar input { flex: 1; min-width: 200px; }
-.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
-th { text-align: left; padding: 0.75rem 1rem; color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.07em; border-bottom: 1px solid var(--border); font-weight: 500; }
+.filter-bar input { flex: 1; min-width: 150px; }
+.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-width: 520px; }
+th { text-align: left; padding: 0.75rem 1rem; color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.07em; border-bottom: 1px solid var(--border); font-weight: 500; white-space: nowrap; }
 td { padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); color: var(--text2); }
 tr:last-child td { border-bottom: none; }
 tr:hover td { background: var(--surface2); }
-.tx-type { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.72rem; font-weight: 500; text-transform: capitalize; }
+.tx-type { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.72rem; font-weight: 500; text-transform: capitalize; white-space: nowrap; }
 .tx-type.deposit { background: rgba(200,240,76,0.12); color: var(--accent); }
 .tx-type.withdrawal { background: rgba(248,113,113,0.12); color: var(--red); }
 .tx-type.goal_deposit { background: rgba(76,240,180,0.12); color: var(--accent2); }
@@ -56,10 +52,30 @@ tr:hover td { background: var(--surface2); }
 .credit { color: var(--accent2); font-weight: 500; }
 .debit { color: var(--red); font-weight: 500; }
 .empty { text-align: center; padding: 3rem; color: var(--muted); }
+.tx-cards { display: none; flex-direction: column; gap: 0.6rem; }
+.tx-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.9rem 1rem; display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; }
+.tx-card-left { flex: 1; min-width: 0; }
+.tx-card-left .tx-desc { font-size: 0.9rem; font-weight: 500; color: var(--text); margin-bottom: 0.3rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tx-card-left .tx-meta { font-size: 0.75rem; color: var(--muted); display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+.tx-card-right { text-align: right; flex-shrink: 0; }
+.tx-card-right .tx-amt { font-size: 0.95rem; font-weight: 600; }
+.tx-card-right .tx-date { font-size: 0.75rem; color: var(--muted); margin-top: 0.15rem; }
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); }
+  .topbar-mobile { display: flex; }
+  .main { margin-left: 0; padding: 1rem; }
+  .table-wrap { display: none; }
+  .tx-cards { display: flex; }
+  .filter-bar input, .filter-bar select { font-size: 0.85rem; padding: 0.5rem 0.7rem; }
+  .page-title { font-size: 1.5rem; }
+}
 </style>
 </head>
 <body>
-<aside class="sidebar">
+
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<aside class="sidebar" id="sidebar">
   <div class="sidebar-brand">FinanceOS</div>
   <div class="sidebar-user">{{ user.full_name or user.username }}</div>
   <a class="nav-item" href="/dashboard">Dashboard</a>
@@ -68,14 +84,21 @@ tr:hover td { background: var(--surface2); }
     <a class="logout-btn" href="/logout">Sign out</a>
   </div>
 </aside>
-<main class="main">
-  <a class="back-link" href="/dashboard">&larr; Back to Dashboard</a>
+
+<div class="topbar-mobile">
+  <button class="burger" onclick="openSidebar()">&#9776;</button>
+  <div class="topbar-title">FinanceOS</div>
+  <div style="width:32px"></div>
+</div>
+
+<div class="main">
+  <a class="back-link" href="/dashboard">&larr; Back</a>
   <div class="page-title">Transactions</div>
-  <div class="page-sub">Complete history of all your financial activity</div>
+  <div class="page-sub">Complete history of all financial activity</div>
 
   <div class="filter-bar">
-    <input type="text" id="search" placeholder="Search transactions..." oninput="filterTable()">
-    <select id="type-filter" onchange="filterTable()">
+    <input type="text" id="search" placeholder="Search..." oninput="filterAll()">
+    <select id="type-filter" onchange="filterAll()">
       <option value="">All Types</option>
       <option value="deposit">Deposit</option>
       <option value="withdrawal">Withdrawal</option>
@@ -89,17 +112,11 @@ tr:hover td { background: var(--surface2); }
   <div class="table-wrap">
     <table id="tx-table">
       <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Account / Goal</th>
-          <th>Date</th>
-          <th style="text-align:right">Amount</th>
-        </tr>
+        <tr><th>Type</th><th>Description</th><th>Account/Goal</th><th>Date</th><th style="text-align:right">Amount</th></tr>
       </thead>
       <tbody>
         {% for tx in transactions %}
-        <tr data-type="{{ tx.type }}" data-desc="{{ (tx.description or '') | lower }}">
+        <tr data-type="{{ tx.type }}" data-desc="{{ (tx.description or '')|lower }}">
           <td><span class="tx-type {{ tx.type }}">{{ tx.type.replace('_',' ') }}</span></td>
           <td>{{ tx.description or '-' }}</td>
           <td>{{ tx.account_name or tx.goal_title or '-' }}</td>
@@ -112,18 +129,44 @@ tr:hover td { background: var(--surface2); }
       </tbody>
     </table>
   </div>
+
+  <div class="tx-cards" id="tx-cards">
+    {% for tx in transactions %}
+    <div class="tx-card" data-type="{{ tx.type }}" data-desc="{{ (tx.description or '')|lower }}">
+      <div class="tx-card-left">
+        <div class="tx-desc">{{ tx.description or tx.type.replace('_',' ') }}</div>
+        <div class="tx-meta">
+          <span class="tx-type {{ tx.type }}">{{ tx.type.replace('_',' ') }}</span>
+          {% if tx.account_name or tx.goal_title %}&bull; {{ tx.account_name or tx.goal_title }}{% endif %}
+        </div>
+      </div>
+      <div class="tx-card-right">
+        <div class="tx-amt {% if tx.type in ['deposit','goal_deposit'] %}credit{% else %}debit{% endif %}">
+          {% if tx.type not in ['deposit','goal_deposit'] %}-{% endif %}Rs {{ "{:,.0f}".format(tx.amount) }}
+        </div>
+        <div class="tx-date">{{ tx.date }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
   {% else %}
-  <div class="table-wrap"><div class="empty">No transactions yet. Start by depositing to a savings account or goal.</div></div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px">
+    <div class="empty">No transactions yet.</div>
+  </div>
   {% endif %}
-</main>
+</div>
+
 <script>
-function filterTable() {
+function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('open'); }
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('open'); }
+function filterAll() {
   const search = document.getElementById('search').value.toLowerCase();
   const type = document.getElementById('type-filter').value;
-  document.querySelectorAll('#tx-table tbody tr').forEach(row => {
-    const matchSearch = !search || row.dataset.desc.includes(search);
-    const matchType = !type || row.dataset.type === type;
-    row.style.display = matchSearch && matchType ? '' : 'none';
+  document.querySelectorAll('#tx-table tbody tr, #tx-cards .tx-card').forEach(row => {
+    const ms = !search || row.dataset.desc.includes(search);
+    const mt = !type || row.dataset.type === type;
+    row.style.display = ms && mt ? '' : 'none';
   });
 }
 </script>
